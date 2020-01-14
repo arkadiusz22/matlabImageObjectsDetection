@@ -28,12 +28,22 @@ if debugDisplay == 1
   title('Converted to binary image');
 end
 
+%% Detect closed regions
+[B, L] = bwboundaries(~ binarizedImage, 'noholes');
+if debugDisplay == 1
+  figure;
+  imshow(originalImage);
+  hold on
+  for k = 1:length(B)
+    boundary = B{k};
+    plot(boundary(:, 2), boundary(:, 1), 'red', 'LineWidth', 2)
+  end
+  title('Detected boundries of regions');
+end
 
-%% Figures properties detection
-[B, L] = bwboundaries(filledHoles, 'noholes');
-STATS = regionprops(L, 'all'); % we need 'BoundingBox' and 'Extent'
+%% Get properties of detected regions
+STATS = regionprops(L, 'Area', 'Centroid', 'Perimeter', 'Extent', 'BoundingBox');
 numberOfShapes = length(STATS);
-
 
 %% Calculate metric for each shape
 for i = 1 : numberOfShapes
