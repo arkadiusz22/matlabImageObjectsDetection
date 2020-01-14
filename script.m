@@ -5,7 +5,7 @@ clear; % Erase all existing variables.
 debugDisplay = 0;
 
 %% Read image
-originalImage = imread('img/4.png');
+originalImage = imread('img/5.png');
 if debugDisplay == 1
   figure;
   imshow(originalImage);
@@ -52,21 +52,30 @@ end
 
 %% Analyze each figure properties
 for i = 1 : numberOfShapes
-  if (abs(STATS(i).BoundingBox(3) - STATS(i).BoundingBox(4)) < 0.1) && (abs(STATS(i).Extent) > 0.95)
-    STATS(i).Shape = 'Square';
-  elseif (abs(STATS(i).Extent) > 0.95)
-    STATS(i).Shape = 'Rectangle';
-  elseif (abs(STATS(i).BoundingBox(3) - STATS(i).BoundingBox(4)) < 0.1) && (abs(STATS(i).Extent) > 0.70)
-    STATS(i).Shape = 'Circle';
-    %   elseif (abs(STATS(i).Extent) > 0.70)
-    %     STATS(i).Shape = 'Ellipsis';
-  elseif (abs(STATS(i).Extent) > 0.25) && (abs(STATS(i).Extent) < 0.6)
-    % elseif (STATS(i).Area * 0.95 < STATS(i).BoundingBox(3) * STATS(i).BoundingBox(4) * 0.5) && ...
-    %   (STATS(i).Area * 1.05 > STATS(i).BoundingBox(3) * STATS(i).BoundingBox(4) * 0.5)
-    % not working for rotated triangles
-    STATS(i).Shape = 'Triangle';
+  if (abs(STATS(i).BoundingBox(3) - STATS(i).BoundingBox(4)) < 0.1)
+    if (abs(STATS(i).Extent) > 0.95)
+      STATS(i).Shape = 'Square';
+    elseif ((abs(STATS(i).Extent) > 0.70) && (abs(STATS(i).Metric) > 0.95))
+      STATS(i).Shape = 'Circle';
+    elseif ((abs(STATS(i).Extent) > 0.70) && (abs(STATS(i).Metric) > 0.70))
+      STATS(i).Shape = 'Rhombus';
+    else
+      STATS(i).Shape = 'Triangle';
+    end
+  elseif (abs(STATS(i).BoundingBox(3) - STATS(i).BoundingBox(4)) > 0.1)
+    if (abs(STATS(i).Extent) > 0.95)
+      STATS(i).Shape = 'Rectangle';
+    elseif ((abs(STATS(i).Extent) > 0.78) && (abs(STATS(i).Metric) > 0.64))
+      STATS(i).Shape = 'Ellipsis';
+    elseif (abs(STATS(i).Extent) < 0.6) && (0.65 > abs(STATS(i).Metric) && (abs(STATS(i).Metric) > 0.40))
+      STATS(i).Shape = 'Triangle';
+    elseif (abs(STATS(i).Metric) > 0.70)
+      STATS(i).Shape = 'Rhombus';
+    else
+      STATS(i).Shape = 'Other2';
+    end
   else
-    STATS(i).Shape = 'Other';
+    STATS(i).Shape = 'Other1';
   end
 end
 
@@ -81,7 +90,7 @@ for i = 1 : numberOfShapes
   txtOffset = 25;
   txt = STATS(i).Shape;
   switch STATS(i).Shape
-    case 'Rectangle'
+    case {'Rectangle', 'Rhombus'}
       txtOffset = 35;
     case {'Ellipsis', 'Triangle'}
       txtOffset = 30;
