@@ -73,7 +73,6 @@ end
 [B, L] = bwboundaries(filledHoles, 'noholes');
 STATS = regionprops(L, 'all'); % we need 'BoundingBox' and 'Extent'
 numberOfShapes = length(STATS);
-shapes = zeros(size(numberOfShapes));
 
 %% Prepare results figure
 figure;
@@ -81,44 +80,40 @@ imshow(originalImage),
 title('Results');
 hold on;
 
+%% Calculate metric for each shape
+for i = 1 : numberOfShapes
+  STATS(i).Metric = 4 * 3.14 * STATS(i).Area / (STATS(i).Perimeter * STATS(i).Perimeter);
+end
+
 %% Analyze each figure properties
 for i = 1 : numberOfShapes
-  % metric(i) = 4 * 3.14 * STATS(i).Area / (STATS(i).Perimeter * STATS(i).Perimeter);
-  % circularity(i) = (STATS(i).Perimeter * STATS(i).Perimeter) / 4 * 3.14 * STATS(i).Area;
-  % for future use
-  
   if (abs(STATS(i).BoundingBox(3) - STATS(i).BoundingBox(4)) < 0.1) && (abs(STATS(i).Extent) > 0.95)
-    shapes(i) = 1; % square
+    STATS(i).Shape = 'Square';
   elseif (abs(STATS(i).Extent) > 0.95)
-    shapes(i) = 2; % rectangle
+    STATS(i).Shape = 'Rectangle';
   elseif (abs(STATS(i).BoundingBox(3) - STATS(i).BoundingBox(4)) < 0.1) && (abs(STATS(i).Extent) > 0.70)
-    shapes(i) = 3; % circle
+    STATS(i).Shape = 'Circle';
+    %   elseif (abs(STATS(i).Extent) > 0.70)
+    %     STATS(i).Shape = 'Ellipsis';
   elseif (abs(STATS(i).Extent) > 0.25) && (abs(STATS(i).Extent) < 0.6)
     % elseif (STATS(i).Area * 0.95 < STATS(i).BoundingBox(3) * STATS(i).BoundingBox(4) * 0.5) && ...
     %   (STATS(i).Area * 1.05 > STATS(i).BoundingBox(3) * STATS(i).BoundingBox(4) * 0.5)
     % not working for rotated triangles
-    shapes(i) = 4; % triangle
+    STATS(i).Shape = 'Triangle';
   else
-    shapes(i) = 0; % other
+    STATS(i).Shape = 'Other';
   end
 end
 
 %% Display name of each shape
 for i = 1 : numberOfShapes
   txtOffset = 25;
-  switch shapes(i)
-    case 1
-      txt = 'Square';
-    case 2
-      txt = 'Rectangle';
+  txt = STATS(i).Shape;
+  switch STATS(i).Shape
+    case 'Rectangle'
       txtOffset = 35;
-    case 3
-      txt = 'Circle';
-    case 4
-      txt = 'Triangle';
+    case {'Ellipsis', 'Triangle'}
       txtOffset = 30;
-    otherwise
-      txt = 'Other';
   end
   centroid = STATS(i).Centroid;
   t = text(centroid(1) - txtOffset, centroid(2), txt);
