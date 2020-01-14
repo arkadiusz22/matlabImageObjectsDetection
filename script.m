@@ -8,7 +8,6 @@ debugDisplay = 0;
 originalImage = imread('img/4.png');
 if debugDisplay == 1
   figure;
-  subplot(3, 3, 1);
   imshow(originalImage);
   title('Original color Image');
 end
@@ -16,7 +15,7 @@ end
 %% Convert to grey
 grayImage = rgb2gray(originalImage);
 if debugDisplay == 1
-  subplot(3, 3, 2);
+  figure;
   imshow(grayImage);
   title('Converted to gray scale');
 end
@@ -24,61 +23,17 @@ end
 %% Binarize image
 binarizedImage = imbinarize(grayImage, 0.9);
 if debugDisplay == 1
-  subplot(3, 3, 3);
+  figure;
   imshow(binarizedImage);
   title('Converted to binary image');
 end
 
-%% Canny edge detection
-cannyImage = edge(binarizedImage, 'canny');
-if debugDisplay == 1
-  subplot(3, 3, 4);
-  imshow(cannyImage);
-  title('Canny Edge Image');
-end
-
-%% Sobel edge detection
-sobelImage = edge(binarizedImage, 'sobel');
-if debugDisplay == 1
-  subplot(3, 3, 5);
-  imshow(sobelImage);
-  title('Sobel Edge Image');
-end
-
-%% Prewitt edge detection
-prewittImage = edge(binarizedImage, 'prewitt');
-if debugDisplay == 1
-  subplot(3, 3, 6);
-  imshow(prewittImage);
-  title('Prewitt Edge Image');
-end
-
-%% Added edges
-allEdgesMethods = cannyImage + sobelImage + prewittImage;
-if debugDisplay == 1
-  subplot(3, 3, 7);
-  imshow(allEdgesMethods);
-  title('Added all detected edges');
-end
-
-%% Fill detected holes (figures)
-filledHoles = imfill(allEdgesMethods, 'holes');
-if debugDisplay == 1
-  subplot(3, 3, 8);
-  imshow(filledHoles)
-  title('Filled Image')
-end
 
 %% Figures properties detection
 [B, L] = bwboundaries(filledHoles, 'noholes');
 STATS = regionprops(L, 'all'); % we need 'BoundingBox' and 'Extent'
 numberOfShapes = length(STATS);
 
-%% Prepare results figure
-figure;
-imshow(originalImage),
-title('Results');
-hold on;
 
 %% Calculate metric for each shape
 for i = 1 : numberOfShapes
@@ -104,6 +59,12 @@ for i = 1 : numberOfShapes
     STATS(i).Shape = 'Other';
   end
 end
+
+%% Prepare results figure
+figure;
+imshow(originalImage),
+title('Results');
+hold on;
 
 %% Display name of each shape
 for i = 1 : numberOfShapes
